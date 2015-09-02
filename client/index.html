@@ -1,0 +1,73 @@
+<html ng-app="friends_app">
+<head>
+    <title>Full Mean</title>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js"></script>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script>
+
+        var friends_app = angular.module('friends_app', []);
+
+        friends_app.factory('FriendFactory', function($http) {
+            var factory = {};
+            var friends = [];
+
+            factory.getFriends = function(callback) {
+                $http.get('/friends').success(function(output) {
+                    friends = output;
+                    callback(friends);
+                }) 
+            }
+
+            factory.addFriend = function(info) {                
+                // friends.push({name: info.name, age: info.age});
+                var data = {name: info.name, age: info.age};
+                $http.post('/add_friend', data).success(function(output) {
+                    //callback(friends);
+                })
+                console.log(info.name+','+info.age)
+            }
+            return factory;
+        });
+
+        friends_app.controller('FriendsController', function($scope, FriendFactory) {
+            $scope.friends = [];
+
+            FriendFactory.getFriends(function(data) {
+                $scope.friends = data;
+            });
+
+            $scope.addFriend = function(data) {
+                FriendFactory.addFriend($scope.new_friend);
+            }
+
+        });
+
+    </script>
+</head>
+
+<body ng-controller="FriendsController">
+    <div class="row">
+        <div class="col-lg-3"></div>
+        <div class="col-lg-6">
+            <h1>FULL MEAN DEMO</h1>
+            <h2>Friends</h2>
+            <input type="text" ng-model="filter_name" placeholder="Filter" class="form-control">
+                
+            <h2>Display Friends</h2>
+            <div class='row'>
+                <div style='display:inline-block; width:200px; margin:4px; border:2px solid silver; border-radius:4px; padding:6px 15px;' ng-repeat="friend in friends | filter: filter_name">
+                    Name: {{friend.name}}<br> Age: {{friend.age}} 
+                    <a href='{{friend._id}}/delete' class="btn btn-xs btn-danger pull-right">Delete</a>
+                </div>
+            </div>
+            <h2>Add a Friend</h2>
+
+            <input type="text" ng-model="new_friend.name" placeholder="Name" class="form-control" style="margin:8px 0;">
+            <input type="text" ng-model="new_friend.age" placeholder="Age" class="form-control" style="margin:8px 0;">
+
+            <a ng-click="addFriend()" href='/' class='btn btn-primary pull-right'>Submit</a>
+        </div>
+    </div>
+</body>
+</html>
